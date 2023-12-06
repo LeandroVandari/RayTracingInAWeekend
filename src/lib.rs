@@ -1,62 +1,43 @@
 pub mod image {
-    pub struct PPMImage {
+
+    pub struct PPMImage<'a, const WIDTH: usize, const HEIGHT: usize>  {
         height: usize,
         width: usize,
         color_encoding: String,
         max_color: u32,
 
-        color_codes: Vec<Vec<super::vec3::Color>>,
+        pub color_codes: &'a mut [[super::vec3::Color;WIDTH];HEIGHT],
     }
 
-    impl PPMImage {
-        pub fn new(img_height: usize, img_width: usize, max_color: u32) -> PPMImage {
+    impl<'a, const WIDTH: usize, const HEIGHT: usize> PPMImage<'a, WIDTH, HEIGHT> {
+        pub fn new(pixels_list: &'a mut [[super::vec3::Color;WIDTH];HEIGHT], max_color: u32) -> PPMImage<WIDTH, HEIGHT> {
             PPMImage {
-                height: img_height,
-                width: img_width,
+                height: HEIGHT,
+                width: WIDTH,
                 color_encoding: String::from("P3"),
                 max_color,
-                color_codes: Self::create_filled_image_list(img_height, img_width),
+                color_codes: pixels_list,
             }
-        }
-        fn create_filled_image_list(
-            img_height: usize,
-            img_width: usize,
-        ) -> Vec<Vec<super::vec3::Color>> {
-            let mut list = Vec::with_capacity(img_height);
-            for i in 0..img_height {
-                eprint!("\rRemaining lines: {} ", img_height - i);
-                list.push(Vec::with_capacity(img_width));
-                for j in 0..img_width {
-                    let pixel_color = super::vec3::Color::new(
-                        j as f64 / (img_width - 1) as f64,
-                        i as f64 / (img_height - 1) as f64,
-                        0.0,
-                    );
-                    list[i].push(pixel_color);
-                }
-            }
-            list
         }
 
         pub fn print_image(&self) {
-            println!("{}\n", self.color_encoding);
-            println!("{} {}\n", self.width, self.height);
-            println!("{}\n", self.max_color);
+            println!("{}", self.color_encoding);
+            println!("{} {}", self.width, self.height);
+            println!("{}", self.max_color);
 
             for row in self.color_codes.iter() {
                 for color in row {
                     let max = self.max_color as f64;
 
-                    let (r, g, b) = (color.x() * max, color.y() * max, color.z() * max);
-
+                    let (r, g, b) = ((color.x() * max) as usize, (color.y() * max) as usize, (color.z() * max) as usize);
                     println!("{} {} {}", r, g, b)
                 }
             }
         }
     }
 
-    impl From<PPMImage> for String {
-        fn from(value: PPMImage) -> Self {
+    impl<'a, const WIDTH: usize, const HEIGHT: usize> From<PPMImage<'a, WIDTH, HEIGHT>> for String {
+        fn from(value: PPMImage<WIDTH, HEIGHT>) -> Self {
             let mut str = value.color_encoding.clone();
 
             let mut width_and_height_str = value.width.to_string();
