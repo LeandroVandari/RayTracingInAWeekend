@@ -27,7 +27,11 @@ pub mod image {
                 eprint!("\rRemaining lines: {} ", img_height - i);
                 list.push(Vec::with_capacity(img_width));
                 for j in 0..img_width {
-                    let pixel_color = super::vec3::Color::new(j as f64 / (img_width - 1) as f64, i as f64 / (img_height - 1) as f64, 0.0);
+                    let pixel_color = super::vec3::Color::new(
+                        j as f64 / (img_width - 1) as f64,
+                        i as f64 / (img_height - 1) as f64,
+                        0.0,
+                    );
                     list[i].push(pixel_color);
                 }
             }
@@ -39,21 +43,17 @@ pub mod image {
             println!("{} {}\n", self.width, self.height);
             println!("{}\n", self.max_color);
 
-
             for row in self.color_codes.iter() {
                 for color in row {
                     let max = self.max_color as f64;
-                    unsafe {
-                    let (r, g, b) = (color.x() * max, color.y() * max, color.z() * max);
-                    
-                    println!("{} {} {}", r, g, b)}
-                }
 
+                    let (r, g, b) = (color.x() * max, color.y() * max, color.z() * max);
+
+                    println!("{} {} {}", r, g, b)
+                }
             }
         }
     }
-
-
 
     impl From<PPMImage> for String {
         fn from(value: PPMImage) -> Self {
@@ -72,7 +72,7 @@ pub mod image {
             for row in value.color_codes {
                 for color in row {
                     let max = value.max_color as f64;
-                    unsafe {
+
                     let (r, g, b) = (color.x() * max, color.y() * max, color.z() * max);
                     str.push_str(&(r as u32).to_string());
                     str.push(' ');
@@ -80,7 +80,6 @@ pub mod image {
                     str.push(' ');
                     str.push_str(&(b as u32).to_string());
                     str.push(' ');
-                    }
 
                     // str.push('\n');
                 }
@@ -96,7 +95,6 @@ pub mod vec3 {
     pub type Color = Vec3;
     pub type Point3 = Vec3;
     pub struct Vec3 {
-
         pub points: [f64; 3],
     }
 
@@ -120,21 +118,21 @@ pub mod vec3 {
         }
 
         fn length_squared(&self) -> f64 {
-            unsafe { self.x() * self.x() + self.y() * self.y() + self.z() * self.z() }
+            self.x() * self.x() + self.y() * self.y() + self.z() * self.z()
         }
         pub fn length(&self) -> f64 {
             f64::sqrt(self.length_squared())
         }
 
         pub fn dot(&self, other: &Self) -> f64 {
-            unsafe {
-                self.x()*other.x() + self.y()*other.y() + self.z()*other.z()
-            }
+            self.x() * other.x() + self.y() * other.y() + self.z() * other.z()
         }
         pub fn cross(&self, other: &Self) -> Self {
-            unsafe {
-                Self::new(self.y()*other.z() - self.z()*other.y(), self.z()*other.x()-self.x()*other.z(), self.x()*other.y()-self.y()*other.x())
-            }
+            Self::new(
+                self.y() * other.z() - self.z() * other.y(),
+                self.z() * other.x() - self.x() * other.z(),
+                self.x() * other.y() - self.y() * other.x(),
+            )
         }
 
         pub fn unit_vector(&self) -> Self {
@@ -142,8 +140,12 @@ pub mod vec3 {
         }
 
         pub fn write_color(&self) {
-            unsafe {
-            println!("{} {} {}", f64::floor(self.x() * 255.999), f64::floor(self.y() * 255.999), f64::floor(self.z() * 255.999));}
+            println!(
+                "{} {} {}",
+                f64::floor(self.x() * 255.999),
+                f64::floor(self.y() * 255.999),
+                f64::floor(self.z() * 255.999)
+            );
         }
     }
 
@@ -151,31 +153,27 @@ pub mod vec3 {
         type Output = Self;
 
         fn neg(self) -> Self::Output {
-            unsafe { Self::new(-self.x(), -self.y(), -self.z()) }
+            Self::new(-self.x(), -self.y(), -self.z())
         }
     }
     impl std::ops::Index<usize> for Vec3 {
         type Output = f64;
         fn index(&self, index: usize) -> &Self::Output {
-            unsafe { &self.points[index] }
+            &self.points[index]
         }
     }
     impl std::ops::AddAssign for Vec3 {
         fn add_assign(&mut self, rhs: Self) {
-            unsafe {
-                self.points[0] += rhs.x();
-                self.points[1] += rhs.y();
-                self.points[2] += rhs.z();
-            }
+            self.points[0] += rhs.x();
+            self.points[1] += rhs.y();
+            self.points[2] += rhs.z();
         }
     }
     impl std::ops::MulAssign<f64> for Vec3 {
         fn mul_assign(&mut self, rhs: f64) {
-            unsafe {
-                self.points[0] *= rhs;
-                self.points[1] *= rhs;
-                self.points[2] *= rhs;
-            }
+            self.points[0] *= rhs;
+            self.points[1] *= rhs;
+            self.points[2] *= rhs;
         }
     }
     impl std::ops::DivAssign<f64> for Vec3 {
@@ -186,33 +184,31 @@ pub mod vec3 {
     impl std::ops::Add for Vec3 {
         type Output = Self;
         fn add(self, rhs: Self) -> Self::Output {
-            unsafe {
-            Self::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z()+rhs.z())
-            }
+            Self::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z())
+        }
+    }
+    impl std::ops::Add<&Vec3> for Vec3 {
+        type Output = Vec3;
+        fn add(self, rhs: &Vec3) -> Self::Output {
+            Self::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z())
         }
     }
     impl std::ops::Sub for Vec3 {
         type Output = Self;
         fn sub(self, rhs: Self) -> Self::Output {
-            unsafe {
-            Self::new(self.x() - rhs.x(), self.y()-rhs.y(), self.z()-rhs.z())
-            }
+            Self::new(self.x() - rhs.x(), self.y() - rhs.y(), self.z() - rhs.z())
         }
     }
     impl std::ops::Mul for Vec3 {
         type Output = Self;
         fn mul(self, rhs: Self) -> Self::Output {
-            unsafe {
             Self::new(self.x() * rhs.x(), self.y() * rhs.y(), self.z() * rhs.z())
-            }
         }
     }
     impl std::ops::Mul<f64> for Vec3 {
         type Output = Self;
         fn mul(self, rhs: f64) -> Self::Output {
-            unsafe {
-            Self::new(self.x() * rhs, self.y()*rhs, self.z()*rhs)
-            }
+            Self::new(self.x() * rhs, self.y() * rhs, self.z() * rhs)
         }
     }
     impl std::ops::Mul<Vec3> for f64 {
@@ -224,13 +220,13 @@ pub mod vec3 {
     impl std::ops::Div<f64> for Vec3 {
         type Output = Self;
         fn div(self, rhs: f64) -> Self::Output {
-            (1.0/rhs) * self
+            (1.0 / rhs) * self
         }
     }
     impl std::ops::Div<f64> for &Vec3 {
         type Output = Vec3;
         fn div(self, rhs: f64) -> Self::Output {
-            (1.0/rhs) * self
+            (1.0 / rhs) * self
         }
     }
     impl std::ops::Mul<&Vec3> for f64 {
@@ -242,16 +238,37 @@ pub mod vec3 {
     impl std::ops::Mul<f64> for &Vec3 {
         type Output = Vec3;
         fn mul(self, rhs: f64) -> Self::Output {
-            unsafe {
-            Vec3::new(self.x() * rhs, self.y()*rhs, self.z()*rhs)
-            }
+            Vec3::new(self.x() * rhs, self.y() * rhs, self.z() * rhs)
         }
     }
 
-
     impl std::fmt::Display for Vec3 {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            unsafe { writeln!(f, "{} {} {}", self.x(), self.y(), self.z()) }
+            writeln!(f, "{} {} {}", self.x(), self.y(), self.z())
+        }
+    }
+}
+
+pub  mod ray {
+    pub struct Ray {
+        origin: super::vec3::Point3,
+        dir: super::vec3::Vec3
+    }
+
+    impl Ray {
+        pub fn new (origin: super::vec3::Point3, dir: super::vec3::Vec3) -> Self {
+            Self {origin, dir}
+        }
+
+        pub fn origin(&self) -> &super::vec3::Point3 {
+            &self.origin
+        }
+        pub fn dir(&self) -> &super::vec3::Vec3 {
+            &self.dir
+        }
+
+        pub fn at(&self, t:f64) -> super::vec3::Vec3 {
+             t*&self.dir + &self.origin
         }
     }
 }
