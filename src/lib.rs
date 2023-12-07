@@ -1,19 +1,18 @@
 pub mod image {
-
-    pub struct PPMImage<'a, const WIDTH: usize, const HEIGHT: usize>  {
+    pub struct PPMImage<'a>  {
         height: usize,
         width: usize,
         color_encoding: String,
         max_color: u32,
 
-        pub color_codes: &'a mut [[super::vec3::Color;WIDTH];HEIGHT],
+        pub color_codes: &'a mut Vec<Vec<super::vec3::Color>>,
     }
 
-    impl<'a, const WIDTH: usize, const HEIGHT: usize> PPMImage<'a, WIDTH, HEIGHT> {
-        pub fn new(pixels_list: &'a mut [[super::vec3::Color;WIDTH];HEIGHT], max_color: u32) -> PPMImage<WIDTH, HEIGHT> {
+    impl<'a> PPMImage<'a> {
+        pub fn new(pixels_list: &'a mut Vec<Vec<super::vec3::Color>>, width: usize, height: usize, max_color: u32) -> PPMImage {
             PPMImage {
-                height: HEIGHT,
-                width: WIDTH,
+                height,
+                width,
                 color_encoding: String::from("P3"),
                 max_color,
                 color_codes: pixels_list,
@@ -36,8 +35,8 @@ pub mod image {
         }
     }
 
-    impl<'a, const WIDTH: usize, const HEIGHT: usize> From<PPMImage<'a, WIDTH, HEIGHT>> for String {
-        fn from(value: PPMImage<WIDTH, HEIGHT>) -> Self {
+    impl<'a> From<PPMImage<'a>> for String {
+        fn from(value: PPMImage) -> Self {
             let mut str = value.color_encoding.clone();
 
             let mut width_and_height_str = value.width.to_string();
@@ -75,6 +74,8 @@ pub mod image {
 pub mod vec3 {
     pub type Color = Vec3;
     pub type Point3 = Vec3;
+
+    #[derive(Clone)]
     pub struct Vec3 {
         pub points: [f64; 3],
     }
@@ -172,6 +173,12 @@ pub mod vec3 {
         type Output = Vec3;
         fn add(self, rhs: &Vec3) -> Self::Output {
             Self::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z())
+        }
+    }
+    impl std::ops::Add<&Vec3> for &Vec3 {
+        type Output = Vec3;
+        fn add(self, rhs: &Vec3) -> Self::Output {
+            Vec3::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z())
         }
     }
     impl std::ops::Sub for Vec3 {
