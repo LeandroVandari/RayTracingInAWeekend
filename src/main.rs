@@ -71,15 +71,15 @@ fn lerp(t: f64, start_value: vec3::Color, end_value: vec3::Color) -> vec3::Color
 fn hit_sphere(center: &vec3::Point3, radius: f64, ray: &ray::Ray) -> f64 {
     let oc = ray.origin() - center;
 
-    let a = ray.dir().dot(ray.dir());
-    let b = 2.0 * oc.dot(ray.dir());
-    let c = oc.dot(&oc) - radius * radius;
+    let a = ray.dir().length_squared();
+    let half_b = oc.dot(ray.dir());
+    let c = oc.length_squared() - radius * radius;
 
-    let discriminant = b*b - 4.0*a*c;
+    let discriminant = half_b*half_b - a*c;
 
     if discriminant <0.0 {
         return -1.0;
     } 
 
-    (-b - f64::sqrt(discriminant)) / 2.0*a
+    (-half_b - f64::sqrt(discriminant)) / a
 }

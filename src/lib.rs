@@ -272,3 +272,65 @@ pub  mod ray {
         }
     }
 }
+
+pub mod hittable {
+    use crate::{ray, vec3};
+
+
+    pub struct HitRecord {
+        pub point: super::vec3::Point3,
+        pub normal: super::vec3::Vec3,
+        pub t: f64,
+        pub front_face: bool
+    }
+
+    impl HitRecord {
+        fn set_face_normal(&mut self, ray: &ray::Ray, outward_normal: vec3::Vec3) {
+            self.front_face = ray.dir().dot(&outward_normal) < 0.0;
+            self.normal = if self.front_face { outward_normal} else {-outward_normal}
+        }
+    }
+
+    pub trait Hittable {
+        fn hit(&self, ray: crate::ray::Ray, t_min: f64, t_max: f64, hit_rec: &mut HitRecord) -> bool;
+    }
+
+    pub mod shapes {
+        use super::Hittable;
+
+        pub struct Sphere {
+            center: crate::vec3::Point3,
+            radius: f64
+        }
+        impl Hittable for Sphere {
+            fn hit(&self, ray: crate::ray::Ray, t_min: f64, t_max: f64, hit_rec: &mut super::HitRecord) -> bool {
+                let radius_to_center = ray.origin() - &self.center;
+                let a = ray.dir().length_squared();
+                let half_b = radius_to_center.dot(ray.dir());
+                let c = radius_to_center.length_squared() -  self.radius * self.radius;
+
+                let discriminant = half_b * half_b - a*c;
+                if discriminant < 0.0 {return false;}
+                let disc_sqrt = f64::sqrt(discriminant);
+
+                let mut root = (-half_b - disc_sqrt) /a;
+                
+                if root <= t_min || root >= t_max {
+                    root = (-half_b + disc_sqrt) / a;
+                    if root <= t_min || root >= t_max {
+                        return false;
+                    }
+                }
+
+                hit_rec.t = root;
+                hit_rec.point = ray.at(root);
+
+                let outward_normal = (&hit_rec.point - &self.center) / self.radius;
+                hit_rec.set_face_normal(&ray, outward_normal);
+
+                true
+            }
+        }
+
+    }
+}
