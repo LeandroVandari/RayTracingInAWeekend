@@ -99,7 +99,7 @@ pub mod vec3 {
             Self { points: [x, y, z] }
         }
 
-        fn length_squared(&self) -> f64 {
+        pub fn length_squared(&self) -> f64 {
             self.x() * self.x() + self.y() * self.y() + self.z() * self.z()
         }
         pub fn length(&self) -> f64 {
@@ -185,6 +185,18 @@ pub mod vec3 {
         type Output = Self;
         fn sub(self, rhs: Self) -> Self::Output {
             Self::new(self.x() - rhs.x(), self.y() - rhs.y(), self.z() - rhs.z())
+        }
+    }
+    impl std::ops::Sub<Vec3> for &Vec3 {
+        type Output = Vec3;
+        fn sub(self, rhs: Vec3) -> Self::Output {
+            Vec3::new(self.x() - rhs.x(), self.y() - rhs.y(), self.z() - rhs.z())
+        }
+    }
+    impl std::ops::Sub for &Vec3 {
+        type Output = Vec3;
+        fn sub(self, rhs:Self) -> Self::Output {
+            Vec3::new(self.x() - rhs.x(), self.y() - rhs.y(), self.z() - rhs.z())
         }
     }
     impl std::ops::Mul for Vec3 {
