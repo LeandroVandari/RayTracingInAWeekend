@@ -1,28 +1,28 @@
 pub mod consts;
-
+pub mod camera;
 pub mod image;
 
 pub mod vec3;
 pub mod ray {
-    pub struct Ray {
-        origin: super::vec3::Point3,
-        dir: super::vec3::Vec3,
+    pub struct Ray<'a> {
+        origin: &'a super::vec3::Point3,
+        dir: &'a super::vec3::Vec3,
     }
 
-    impl Ray {
-        pub fn new(origin: super::vec3::Point3, dir: super::vec3::Vec3) -> Self {
+    impl<'a> Ray<'a> {
+        pub fn new(origin: &'a super::vec3::Point3, dir: &'a super::vec3::Vec3) -> Self {
             Self { origin, dir }
         }
 
         pub fn origin(&self) -> &super::vec3::Point3 {
-            &self.origin
+            self.origin
         }
         pub fn dir(&self) -> &super::vec3::Vec3 {
-            &self.dir
+            self.dir
         }
 
         pub fn at(&self, t: f64) -> super::vec3::Vec3 {
-            t * &self.dir + &self.origin
+            t * self.dir + self.origin
         }
     }
 }
@@ -167,4 +167,8 @@ pub mod hittable {
             }
         }
     }
+}
+
+pub fn lerp(t: f64, start_value: vec3::Color, end_value: vec3::Color) -> vec3::Color {
+    (1.0 - t) * start_value + t * end_value
 }
