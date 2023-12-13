@@ -1,16 +1,16 @@
-pub mod consts;
 pub mod camera;
+pub mod consts;
 pub mod image;
 
 pub mod vec3;
 pub mod ray {
     pub struct Ray<'a> {
         origin: &'a super::vec3::Point3,
-        dir: &'a super::vec3::Vec3,
+        dir: super::vec3::Vec3,
     }
 
     impl<'a> Ray<'a> {
-        pub fn new(origin: &'a super::vec3::Point3, dir: &'a super::vec3::Vec3) -> Self {
+        pub fn new(origin: &'a super::vec3::Point3, dir: super::vec3::Vec3) -> Self {
             Self { origin, dir }
         }
 
@@ -18,17 +18,17 @@ pub mod ray {
             self.origin
         }
         pub fn dir(&self) -> &super::vec3::Vec3 {
-            self.dir
+            &self.dir
         }
 
         pub fn at(&self, t: f64) -> super::vec3::Vec3 {
-            t * self.dir + self.origin
+            t * &self.dir + self.origin
         }
     }
 }
 
 pub mod hittable {
-    use crate::{ray, vec3, consts};
+    use crate::{consts, ray, vec3};
     use std::rc::Rc;
 
     pub struct HitRecord {
@@ -98,13 +98,22 @@ pub mod hittable {
             self.hittables_vec.push(hittable);
         }
 
-        pub fn hit(&self, ray: &ray::Ray, t_interval: consts::Interval, hit_rec: &mut HitRecord) -> bool {
+        pub fn hit(
+            &self,
+            ray: &ray::Ray,
+            t_interval: consts::Interval,
+            hit_rec: &mut HitRecord,
+        ) -> bool {
             let mut temp_rec = HitRecord::new();
             let mut hit_anything = false;
             let mut closest_so_far = t_interval.max;
 
             for object in &self.hittables_vec {
-                if object.hit(ray, consts::Interval::new(t_interval.min, closest_so_far), &mut temp_rec) {
+                if object.hit(
+                    ray,
+                    consts::Interval::new(t_interval.min, closest_so_far),
+                    &mut temp_rec,
+                ) {
                     hit_anything = true;
                     closest_so_far = temp_rec.t;
                     hit_rec.set_params_equal_to(&temp_rec);
@@ -177,4 +186,8 @@ pub mod hittable {
 
 pub fn lerp(t: f64, start_value: vec3::Color, end_value: vec3::Color) -> vec3::Color {
     (1.0 - t) * start_value + t * end_value
+}
+
+pub fn degrees_to_radians(degrees: f64) -> f64 {
+    degrees * consts::PI / 180.0
 }
