@@ -64,6 +64,12 @@ pub mod hittable {
         }
     }
 
+    impl Default for HitRecord {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
     pub trait Hittable {
         fn hit(
             &self,

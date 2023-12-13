@@ -10,7 +10,7 @@ fn main() {
 
     let mut camera = ray_tracing::camera::Camera::default();
 
-    camera.img_width = 400;
+    camera.img_width = 1600;
     camera.aspect_ratio = 16.0/9.0;
 
 

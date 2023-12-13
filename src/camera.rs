@@ -15,6 +15,8 @@ pub struct Camera{
 impl Camera{
 
     pub fn render(&mut self, world: &hittable::HittableObjects) {
+        use std::io::Write;
+        let mut write_buffer = std::io::BufWriter::new(std::io::stdout());
         self.initialize();
         println!("P3");
     println!("{} {}", self.img_width, self.img_height);
@@ -33,10 +35,11 @@ impl Camera{
                                                    i as f64 / (self.img_height - 1) as f64,
                                                    0.0,
                                                ); */
-            pixel_color.write_color();
+            pixel_color.write_color(&mut write_buffer);
             //  img.color_codes[i].push(pixel_color);
         }
     }
+    write_buffer.flush().unwrap();
 
     }
 

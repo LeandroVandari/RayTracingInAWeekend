@@ -47,13 +47,14 @@ pub type Color = Vec3;
             self / self.length()
         }
 
-        pub fn write_color(&self) {
-            println!(
-                "{} {} {}",
+        pub fn write_color(&self, buffer: &mut std::io::BufWriter<std::io::Stdout>) {
+            use std::io::Write;
+            write!(buffer,
+                "{} {} {} ",
                 f64::floor(self.x() * 255.999),
                 f64::floor(self.y() * 255.999),
                 f64::floor(self.z() * 255.999)
-            );
+            ).unwrap();
         }
     }
 
