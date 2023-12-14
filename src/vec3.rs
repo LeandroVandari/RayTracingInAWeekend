@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use crate::consts;
 
 pub type Color = Vec3;
@@ -18,6 +20,41 @@ impl Vec3 {
     pub fn z(&self) -> f64 {
         self.points[2]
     }
+
+    pub fn random() -> Self {
+        let mut rand_gen = rand::thread_rng();
+        Self::new(rand_gen.gen(), rand_gen.gen(), rand_gen.gen())
+    }
+    pub fn random_between(min: f64, max: f64) -> Self {
+        let mut rand_gen = rand::thread_rng();
+
+        Self::new(rand_gen.gen_range(min..=max), rand_gen.gen_range(min..=max), rand_gen.gen_range(min..=max))
+    }
+
+    pub fn random_in_unit_sphere() -> Self {
+        loop {
+            let point = Self::random_between(-1.0, 1.0);
+            if point.length_squared() < 1.0 { //If the point is in the unit sphere
+                break point;
+            }
+        }
+    }
+    // Random vector on unit sphere's surface
+    pub fn random_unit_vector() -> Self {
+        Self::random_in_unit_sphere().unit_vector()
+    }
+
+    pub fn random_on_hemisphere(normal: &Self) -> Self {
+        let on_sphere = Self::random_unit_vector();
+
+        if normal.dot(&on_sphere) > 0.0 { // Same hemisphere
+            on_sphere
+        }
+        else {
+            -on_sphere
+        }
+    }
+
     pub const fn zeroed() -> Self {
         Self {
             points: [0.0, 0.0, 0.0],
@@ -54,6 +91,8 @@ impl Vec3 {
         buffer: &mut std::io::BufWriter<std::io::Stdout>,
         samples_per_pixel: f64,
     ) {
+        use super::linear_space_to_gamma_space;
+
         let mut r = self.x();
         let mut g = self.y();
         let mut b = self.z();
@@ -62,6 +101,10 @@ impl Vec3 {
         r *= scale;
         g *= scale;
         b *= scale;
+
+        r = linear_space_to_gamma_space(r);
+        g = linear_space_to_gamma_space(g);
+        b = linear_space_to_gamma_space(b);
 
         let intensity = consts::Interval::new(0.0, 0.999);
         use std::io::Write;

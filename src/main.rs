@@ -15,9 +15,10 @@ fn main() {
 
     let mut camera = ray_tracing::camera::Camera::default();
 
-    camera.img_width = 1600;
+    camera.img_width = 400;
     camera.aspect_ratio = 16.0 / 9.0;
     camera.samples_per_pixel = 100;
+    camera.max_bounces = 50;
 
     camera.render(&world);
 }

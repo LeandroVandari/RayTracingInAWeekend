@@ -191,3 +191,7 @@ pub fn lerp(t: f64, start_value: vec3::Color, end_value: vec3::Color) -> vec3::C
 pub fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * consts::PI / 180.0
 }
+
+pub fn linear_space_to_gamma_space(linear_component: f64) -> f64 {
+    f64::sqrt(linear_component)
+}

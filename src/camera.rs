@@ -11,6 +11,7 @@ pub struct Camera {
     pixel_delta_u: vec3::Vec3,
     pixel_delta_v: vec3::Vec3,
     pub samples_per_pixel: u32,
+    pub max_bounces: u32,
 }
 
 impl Camera {
@@ -30,7 +31,7 @@ impl Camera {
                 for _ in 0..self.samples_per_pixel {
                     let ray = self.get_ray(i, j);
 
-                    pixel_color += Self::ray_color(&ray, world);
+                    pixel_color += Self::ray_color(&ray, self.max_bounces, world);
                 }
                 pixel_color.write_color(&mut write_buffer, samples_per_pixel);
                 //  img.color_codes[i].push(pixel_color);
@@ -71,14 +72,18 @@ impl Camera {
         let pixel_0_loc = viewport_upper_left + (0.5 * (&pixel_delta_u + &pixel_delta_v)); */
     }
 
-    fn ray_color(ray: &ray::Ray, world: &hittable::HittableObjects) -> vec3::Color {
+    fn ray_color(ray: &ray::Ray, depth: u32, world: &hittable::HittableObjects) -> vec3::Color {
+        if depth == 0 {
+            return vec3::Color::zeroed();
+        }
         let mut hit_record = hittable::HitRecord::new();
         if world.hit(
             ray,
-            consts::Interval::new(0.0, consts::INFINITY),
+            consts::Interval::new(0.001, consts::INFINITY),
             &mut hit_record,
         ) {
-            return 0.5 * (hit_record.normal + vec3::Color::new(1.0, 1.0, 1.0)); // Normalize values
+           let direction = hit_record.normal + vec3::Vec3::random_unit_vector();
+           return 0.5 * Self::ray_color(&ray::Ray::new(&hit_record.point, direction), depth - 1, world);
         }
         let unit_direction = ray.dir().unit_vector();
         let a = 0.5 * (unit_direction.y() + 1.0); // Normalize values from -1 to 1 to 0 to 1
@@ -120,6 +125,7 @@ impl Default for Camera {
             pixel_delta_u: vec3::Vec3::zeroed(),
             pixel_delta_v: vec3::Vec3::zeroed(),
             samples_per_pixel: 100,
+            max_bounces: 10
         }
     }
 }
