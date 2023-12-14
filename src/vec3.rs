@@ -28,13 +28,18 @@ impl Vec3 {
     pub fn random_between(min: f64, max: f64) -> Self {
         let mut rand_gen = rand::thread_rng();
 
-        Self::new(rand_gen.gen_range(min..=max), rand_gen.gen_range(min..=max), rand_gen.gen_range(min..=max))
+        Self::new(
+            rand_gen.gen_range(min..=max),
+            rand_gen.gen_range(min..=max),
+            rand_gen.gen_range(min..=max),
+        )
     }
 
     pub fn random_in_unit_sphere() -> Self {
         loop {
             let point = Self::random_between(-1.0, 1.0);
-            if point.length_squared() < 1.0 { //If the point is in the unit sphere
+            if point.length_squared() < 1.0 {
+                //If the point is in the unit sphere
                 break point;
             }
         }
@@ -47,10 +52,10 @@ impl Vec3 {
     pub fn random_on_hemisphere(normal: &Self) -> Self {
         let on_sphere = Self::random_unit_vector();
 
-        if normal.dot(&on_sphere) > 0.0 { // Same hemisphere
+        if normal.dot(&on_sphere) > 0.0 {
+            // Same hemisphere
             on_sphere
-        }
-        else {
+        } else {
             -on_sphere
         }
     }

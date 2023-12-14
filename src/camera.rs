@@ -82,8 +82,13 @@ impl Camera {
             consts::Interval::new(0.001, consts::INFINITY),
             &mut hit_record,
         ) {
-           let direction = hit_record.normal + vec3::Vec3::random_unit_vector();
-           return 0.5 * Self::ray_color(&ray::Ray::new(&hit_record.point, direction), depth - 1, world);
+            let direction = hit_record.normal + vec3::Vec3::random_unit_vector();
+            return 0.5
+                * Self::ray_color(
+                    &ray::Ray::new(&hit_record.point, direction),
+                    depth - 1,
+                    world,
+                );
         }
         let unit_direction = ray.dir().unit_vector();
         let a = 0.5 * (unit_direction.y() + 1.0); // Normalize values from -1 to 1 to 0 to 1
@@ -125,7 +130,7 @@ impl Default for Camera {
             pixel_delta_u: vec3::Vec3::zeroed(),
             pixel_delta_v: vec3::Vec3::zeroed(),
             samples_per_pixel: 100,
-            max_bounces: 10
+            max_bounces: 10,
         }
     }
 }
