@@ -18,7 +18,7 @@ fn main() {
     camera.img_width = 400;
     camera.aspect_ratio = 16.0 / 9.0;
     camera.samples_per_pixel = 100;
-    camera.max_bounces = 50;
+    camera.max_bounces = 100;
 
     camera.render(&world);
 }

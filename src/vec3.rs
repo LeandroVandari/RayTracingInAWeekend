@@ -25,19 +25,20 @@ impl Vec3 {
         let mut rand_gen = rand::thread_rng();
         Self::new(rand_gen.gen(), rand_gen.gen(), rand_gen.gen())
     }
-    pub fn random_between(min: f64, max: f64) -> Self {
+    pub fn random_between(distribution: &once_cell::sync::Lazy<rand::distributions::Uniform<f64>>) -> Self {
+        use rand::distributions::Distribution;
         let mut rand_gen = rand::thread_rng();
 
         Self::new(
-            rand_gen.gen_range(min..=max),
-            rand_gen.gen_range(min..=max),
-            rand_gen.gen_range(min..=max),
+            distribution.sample(&mut rand_gen),
+            distribution.sample(&mut rand_gen),
+            distribution.sample(&mut rand_gen),
         )
     }
 
     pub fn random_in_unit_sphere() -> Self {
         loop {
-            let point = Self::random_between(-1.0, 1.0);
+            let point = Self::random_between(&consts::MINUS_ONE_TO_ONE);
             if point.length_squared() < 1.0 {
                 //If the point is in the unit sphere
                 break point;

@@ -1,6 +1,7 @@
 pub mod camera;
 pub mod consts;
 pub mod image;
+pub mod material;
 
 pub mod vec3;
 pub mod ray {
