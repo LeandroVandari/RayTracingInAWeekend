@@ -25,6 +25,13 @@ pub mod ray {
         pub fn at(&self, t: f64) -> super::vec3::Vec3 {
             t * &self.dir + self.origin
         }
+
+        pub(crate) fn set_origin(&mut self, origin: &'a super::vec3::Point3) {
+            self.origin = origin;
+        }
+        pub(crate) fn set_dir(&mut self, dir: super::vec3::Vec3) {
+            self.dir = dir;
+        }
     }
 }
 
@@ -37,6 +44,7 @@ pub mod hittable {
         pub normal: super::vec3::Vec3,
         pub t: f64,
         pub front_face: bool,
+        pub material: std::mem::MaybeUninit<Rc<dyn super::material::Material>>,
     }
 
     impl HitRecord {
@@ -54,6 +62,7 @@ pub mod hittable {
                 normal: vec3::Vec3::zeroed(),
                 t: f64::MAX,
                 front_face: true,
+                material: std::mem::MaybeUninit::uninit()
             }
         }
 
@@ -65,11 +74,11 @@ pub mod hittable {
         }
     }
 
-    impl Default for HitRecord {
-        fn default() -> Self {
-            Self::new()
-        }
+impl  Default for HitRecord {
+    fn default() -> Self {
+        Self::new()
     }
+}
 
     pub trait Hittable {
         fn hit(
@@ -139,11 +148,12 @@ pub mod hittable {
         pub struct Sphere {
             center: crate::vec3::Point3,
             radius: f64,
+            material: std::rc::Rc<dyn crate::material::Material>
         }
 
         impl Sphere {
-            pub fn new(center: crate::vec3::Point3, radius: f64) -> Self {
-                Self { center, radius }
+            pub fn new(center: crate::vec3::Point3, radius: f64, material: std::rc::Rc<dyn crate::material::Material>) -> Self {
+                Self { center, radius, material }
             }
         }
         impl Hittable for Sphere {
@@ -178,6 +188,7 @@ pub mod hittable {
 
                 let outward_normal = (&hit_rec.point - &self.center) / self.radius;
                 hit_rec.set_face_normal(ray, outward_normal);
+                hit_rec.material = std::mem::MaybeUninit::new(self.material.clone());
 
                 true
             }
