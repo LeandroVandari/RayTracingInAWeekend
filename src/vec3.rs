@@ -1,4 +1,4 @@
-use rand::Rng;
+use rand::{Rng, SeedableRng};
 
 use crate::consts;
 
@@ -21,24 +21,23 @@ impl Vec3 {
         self.points[2]
     }
 
-    pub fn random() -> Self {
-        let mut rand_gen = rand::thread_rng();
-        Self::new(rand_gen.gen(), rand_gen.gen(), rand_gen.gen())
+    pub fn random(rng_gen: &mut rand::rngs::SmallRng) -> Self {
+
+        Self::new(rng_gen.gen(), rng_gen.gen(), rng_gen.gen())
     }
-    pub fn random_between(distribution: &once_cell::sync::Lazy<rand::distributions::Uniform<f64>>) -> Self {
+    pub fn random_between(distribution: &once_cell::sync::Lazy<rand::distributions::Uniform<f64>>, rng_gen: &mut rand::rngs::SmallRng) -> Self {
         use rand::distributions::Distribution;
-        let mut rand_gen = rand::thread_rng();
 
         Self::new(
-            distribution.sample(&mut rand_gen),
-            distribution.sample(&mut rand_gen),
-            distribution.sample(&mut rand_gen),
+            distribution.sample(rng_gen),
+            distribution.sample(rng_gen),
+            distribution.sample(rng_gen),
         )
     }
 
-    pub fn random_in_unit_sphere() -> Self {
+    pub fn random_in_unit_sphere(rng_gen: &mut rand::rngs::SmallRng) -> Self {
         loop {
-            let point = Self::random_between(&consts::MINUS_ONE_TO_ONE);
+            let point = Self::random_between(&consts::MINUS_ONE_TO_ONE, rng_gen);
             if point.length_squared() < 1.0 {
                 //If the point is in the unit sphere
                 break point;
@@ -46,12 +45,12 @@ impl Vec3 {
         }
     }
     // Random vector on unit sphere's surface
-    pub fn random_unit_vector() -> Self {
-        Self::random_in_unit_sphere().unit_vector()
+    pub fn random_unit_vector(rng_gen: &mut rand::rngs::SmallRng) -> Self {
+        Self::random_in_unit_sphere(rng_gen).unit_vector()
     }
 
-    pub fn random_on_hemisphere(normal: &Self) -> Self {
-        let on_sphere = Self::random_unit_vector();
+    pub fn random_on_hemisphere(normal: &Self, rng_gen: &mut rand::rngs::SmallRng) -> Self {
+        let on_sphere = Self::random_unit_vector(rng_gen);
 
         if normal.dot(&on_sphere) > 0.0 {
             // Same hemisphere
@@ -86,6 +85,15 @@ impl Vec3 {
             self.z() * other.x() - self.x() * other.z(),
             self.x() * other.y() - self.y() * other.x(),
         )
+    }
+    pub fn near_zero(&self) -> bool {
+        let diff = 1e-8;
+
+        f64::abs(self.x()) < diff && f64::abs(self.y()) < diff && f64::abs(self.z()) < diff
+    }
+
+    pub fn reflect(ray_in: &Self, normal: &Self) -> Self {
+        ray_in - 2.0*ray_in.dot(normal)*normal
     }
 
     pub fn unit_vector(&self) -> Self {

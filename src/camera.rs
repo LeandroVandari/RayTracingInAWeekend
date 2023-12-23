@@ -1,6 +1,6 @@
-use rand::Rng;
+use rand::{Rng, SeedableRng};
 
-use crate::{consts, hittable, lerp, ray, vec3};
+use crate::{consts, hittable, lerp, ray, vec3::{self, Vec3}};
 
 pub struct Camera {
     pub aspect_ratio: f64,
@@ -17,6 +17,7 @@ pub struct Camera {
 impl Camera {
     pub fn render(&mut self, world: &hittable::HittableObjects) {
         let samples_per_pixel = self.samples_per_pixel as f64;
+        let mut rng_gen = rand::rngs::SmallRng::from_entropy();
         use std::io::Write;
         let mut write_buffer = std::io::BufWriter::new(std::io::stdout());
         self.initialize();
@@ -29,9 +30,9 @@ impl Camera {
             for j in 0..self.img_width {
                 let mut pixel_color = vec3::Vec3::zeroed();
                 for _ in 0..self.samples_per_pixel {
-                    let ray = self.get_ray(i, j);
+                    let ray = self.get_ray(i, j, &mut rng_gen);
 
-                    pixel_color += Self::ray_color(&ray, self.max_bounces, world);
+                    pixel_color += Self::ray_color(&ray, self.max_bounces, world, &mut rng_gen);
                 }
                 pixel_color.write_color(&mut write_buffer, samples_per_pixel);
                 //  img.color_codes[i].push(pixel_color);
@@ -72,7 +73,7 @@ impl Camera {
         let pixel_0_loc = viewport_upper_left + (0.5 * (&pixel_delta_u + &pixel_delta_v)); */
     }
 
-    fn ray_color(ray: &ray::Ray, depth: u32, world: &hittable::HittableObjects) -> vec3::Color {
+    fn ray_color(ray: &ray::Ray, depth: u32, world: &hittable::HittableObjects, rng_gen: &mut rand::rngs::SmallRng) -> vec3::Color {
         if depth == 0 {
             return vec3::Color::zeroed();
         }
@@ -82,13 +83,14 @@ impl Camera {
             consts::Interval::new(0.001, consts::INFINITY),
             &mut hit_record,
         ) {
-            let direction = hit_record.normal + vec3::Vec3::random_unit_vector();
-            return 0.5
-                * Self::ray_color(
-                    &ray::Ray::new(&hit_record.point, direction),
-                    depth - 1,
-                    world,
-                );
+            let zero = Vec3::zeroed();
+            let mut scattered = ray::Ray::new(&zero, Vec3::zeroed());
+            let mut attenuation = vec3::Color::zeroed();
+            let material = hit_record.material.clone().unwrap();
+            if material.scatter(ray, &mut hit_record, &mut attenuation, &mut scattered, rng_gen) {
+                return attenuation * Self::ray_color(&scattered, depth - 1, world, rng_gen);
+            }
+            return vec3::Color::zeroed();
         }
         let unit_direction = ray.dir().unit_vector();
         let a = 0.5 * (unit_direction.y() + 1.0); // Normalize values from -1 to 1 to 0 to 1
@@ -100,20 +102,20 @@ impl Camera {
         )
     }
 
-    fn get_ray(&self, i: usize, j: usize) -> ray::Ray {
+    fn get_ray(&self, i: usize, j: usize, rng_gen: &mut rand::rngs::SmallRng) -> ray::Ray {
         let pixel_center =
             (i as f64 * &self.pixel_delta_v) + (j as f64 * &self.pixel_delta_u) + &self.pixel_0_loc;
 
-        let pixel_sample = pixel_center + self.pixel_sample_square();
+        let pixel_sample = pixel_center + self.pixel_sample_square(rng_gen);
 
         let ray_dir = &pixel_sample - &self.center;
 
         return ray::Ray::new(&self.center, ray_dir);
     }
 
-    fn pixel_sample_square(&self) -> vec3::Vec3 {
-        let point_x: f64 = -0.5 + rand::thread_rng().gen::<f64>();
-        let point_y: f64 = -0.5 + rand::thread_rng().gen::<f64>();
+    fn pixel_sample_square(&self, rng_gen: &mut rand::rngs::SmallRng) -> vec3::Vec3 {
+        let point_x: f64 = -0.5 + rng_gen.gen::<f64>();
+        let point_y: f64 = -0.5 + rng_gen.gen::<f64>();
 
         (point_x * &self.pixel_delta_u) + (point_y * &self.pixel_delta_v)
     }

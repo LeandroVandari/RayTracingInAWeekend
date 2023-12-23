@@ -44,7 +44,7 @@ pub mod hittable {
         pub normal: super::vec3::Vec3,
         pub t: f64,
         pub front_face: bool,
-        pub material: std::mem::MaybeUninit<Rc<dyn super::material::Material>>,
+        pub material: Option<Rc<dyn super::material::Material>>,
     }
 
     impl HitRecord {
@@ -62,7 +62,7 @@ pub mod hittable {
                 normal: vec3::Vec3::zeroed(),
                 t: f64::MAX,
                 front_face: true,
-                material: std::mem::MaybeUninit::uninit()
+                material: None
             }
         }
 
@@ -73,6 +73,7 @@ pub mod hittable {
             self.front_face = other_hit_rec.front_face;
         }
     }
+
 
 impl  Default for HitRecord {
     fn default() -> Self {
@@ -127,6 +128,7 @@ impl  Default for HitRecord {
                     hit_anything = true;
                     closest_so_far = temp_rec.t;
                     hit_rec.set_params_equal_to(&temp_rec);
+                    hit_rec.material = temp_rec.material.clone();
                 }
             }
 
@@ -188,7 +190,7 @@ impl  Default for HitRecord {
 
                 let outward_normal = (&hit_rec.point - &self.center) / self.radius;
                 hit_rec.set_face_normal(ray, outward_normal);
-                hit_rec.material = std::mem::MaybeUninit::new(self.material.clone());
+                hit_rec.material = Some(self.material.clone());
 
                 true
             }
