@@ -1,4 +1,4 @@
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 
 use crate::consts;
 
@@ -22,10 +22,12 @@ impl Vec3 {
     }
 
     pub fn random(rng_gen: &mut rand::rngs::SmallRng) -> Self {
-
         Self::new(rng_gen.gen(), rng_gen.gen(), rng_gen.gen())
     }
-    pub fn random_between(distribution: &once_cell::sync::Lazy<rand::distributions::Uniform<f64>>, rng_gen: &mut rand::rngs::SmallRng) -> Self {
+    pub fn random_between(
+        distribution: &once_cell::sync::Lazy<rand::distributions::Uniform<f64>>,
+        rng_gen: &mut rand::rngs::SmallRng,
+    ) -> Self {
         use rand::distributions::Distribution;
 
         Self::new(
@@ -93,7 +95,16 @@ impl Vec3 {
     }
 
     pub fn reflect(ray_in: &Self, normal: &Self) -> Self {
-        ray_in - 2.0*ray_in.dot(normal)*normal
+        ray_in - 2.0 * ray_in.dot(normal) * normal
+    }
+
+    pub fn refract(ray_in: &Self, normal: &Self, etai_over_etat: f64) -> Self {
+        let cos_theta = f64::min((-ray_in).dot(normal), 1.0);
+        let ray_out_perpendicular = etai_over_etat * (ray_in + &(cos_theta * normal));
+        let ray_out_parallel =
+            -f64::sqrt(f64::abs(1.0 - ray_out_perpendicular.length_squared())) * normal;
+
+        ray_out_perpendicular + ray_out_parallel
     }
 
     pub fn unit_vector(&self) -> Self {
@@ -140,6 +151,13 @@ impl std::ops::Neg for Vec3 {
         Self::new(-self.x(), -self.y(), -self.z())
     }
 }
+impl std::ops::Neg for &Vec3 {
+    type Output = Vec3;
+    fn neg(self) -> Self::Output {
+        Vec3::new(-self.x(), -self.y(), -self.z())
+    }
+}
+
 impl std::ops::Index<usize> for Vec3 {
     type Output = f64;
     fn index(&self, index: usize) -> &Self::Output {

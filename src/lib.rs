@@ -62,7 +62,7 @@ pub mod hittable {
                 normal: vec3::Vec3::zeroed(),
                 t: f64::MAX,
                 front_face: true,
-                material: None
+                material: None,
             }
         }
 
@@ -74,12 +74,11 @@ pub mod hittable {
         }
     }
 
-
-impl  Default for HitRecord {
-    fn default() -> Self {
-        Self::new()
+    impl Default for HitRecord {
+        fn default() -> Self {
+            Self::new()
+        }
     }
-}
 
     pub trait Hittable {
         fn hit(
@@ -150,12 +149,20 @@ impl  Default for HitRecord {
         pub struct Sphere {
             center: crate::vec3::Point3,
             radius: f64,
-            material: std::rc::Rc<dyn crate::material::Material>
+            material: std::rc::Rc<dyn crate::material::Material>,
         }
 
         impl Sphere {
-            pub fn new(center: crate::vec3::Point3, radius: f64, material: std::rc::Rc<dyn crate::material::Material>) -> Self {
-                Self { center, radius, material }
+            pub fn new(
+                center: crate::vec3::Point3,
+                radius: f64,
+                material: std::rc::Rc<dyn crate::material::Material>,
+            ) -> Self {
+                Self {
+                    center,
+                    radius,
+                    material,
+                }
             }
         }
         impl Hittable for Sphere {

@@ -1,9 +1,7 @@
-
-
 pub const INFINITY: f64 = f64::INFINITY;
 pub const PI: f64 = std::f64::consts::PI;
-pub static MINUS_ONE_TO_ONE: once_cell::sync::Lazy<rand::distributions::Uniform<f64>> = once_cell::sync::Lazy::new(|| rand::distributions::Uniform::new_inclusive(-1.0, 1.0));
-
+pub static MINUS_ONE_TO_ONE: once_cell::sync::Lazy<rand::distributions::Uniform<f64>> =
+    once_cell::sync::Lazy::new(|| rand::distributions::Uniform::new_inclusive(-1.0, 1.0));
 
 pub struct Interval {
     pub min: f64,

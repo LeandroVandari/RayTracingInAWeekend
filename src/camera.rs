@@ -1,6 +1,9 @@
 use rand::{Rng, SeedableRng};
 
-use crate::{consts, hittable, lerp, ray, vec3::{self, Vec3}};
+use crate::{
+    consts, hittable, lerp, ray,
+    vec3::{self, Vec3},
+};
 
 pub struct Camera {
     pub aspect_ratio: f64,
@@ -73,7 +76,12 @@ impl Camera {
         let pixel_0_loc = viewport_upper_left + (0.5 * (&pixel_delta_u + &pixel_delta_v)); */
     }
 
-    fn ray_color(ray: &ray::Ray, depth: u32, world: &hittable::HittableObjects, rng_gen: &mut rand::rngs::SmallRng) -> vec3::Color {
+    fn ray_color(
+        ray: &ray::Ray,
+        depth: u32,
+        world: &hittable::HittableObjects,
+        rng_gen: &mut rand::rngs::SmallRng,
+    ) -> vec3::Color {
         if depth == 0 {
             return vec3::Color::zeroed();
         }
@@ -87,7 +95,13 @@ impl Camera {
             let mut scattered = ray::Ray::new(&zero, Vec3::zeroed());
             let mut attenuation = vec3::Color::zeroed();
             let material = hit_record.material.clone().unwrap();
-            if material.scatter(ray, &mut hit_record, &mut attenuation, &mut scattered, rng_gen) {
+            if material.scatter(
+                ray,
+                &mut hit_record,
+                &mut attenuation,
+                &mut scattered,
+                rng_gen,
+            ) {
                 return attenuation * Self::ray_color(&scattered, depth - 1, world, rng_gen);
             }
             return vec3::Color::zeroed();
